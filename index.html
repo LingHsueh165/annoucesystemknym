@@ -432,8 +432,9 @@
                 weekday: 'long'
             });
             let withF = document.getElementById("fare").checked;
+            let FareMessage = ""
             if (withF){
-                let FareMessage = "（交通費込み）"
+                FareMessage = "（交通費込み）"
             }
 
             // メッセージの作成
@@ -458,30 +459,49 @@
             // モーダルを閉じる
             modal.style.display = 'none';
             
-            // ChatWork APIにPOSTリクエストを送信
-            fetch(`https://api.chatwork.com/v2/rooms/${roomId}/messages`, {
+            // デバッグ用コンソール出力
+            console.log("送信するメッセージ:", message);
+            console.log("APIキー:", apiKey.substring(0, 3) + "...");
+            console.log("ルームID:", roomId);
+            
+            // リクエスト設定
+            const options = {
                 method: 'POST',
                 headers: {
-                    'X-ChatWorkToken': apiKey,
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'accept': 'application/json',
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'x-chatworktoken': apiKey // キーの大文字小文字修正
                 },
-                body: `body=${encodeURIComponent(message)}`
-            })
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById('successMessage').style.display = 'block';
-                    document.getElementById('errorMessage').style.display = 'none';
-                    // フォームをリセット
-                    document.getElementById('jobPostingForm').reset();
-                } else {
-                    throw new Error('APIリクエストに失敗しました');
-                }
-            })
-            .catch(error => {
-                document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('successMessage').style.display = 'none';
-                console.error('エラー:', error);
-            });
+                body: new URLSearchParams({
+                    body: message // URLSearchParams を使用
+                })
+            };
+            
+            // ChatWork APIにPOSTリクエストを送信
+            fetch(`https://api.chatwork.com/v2/rooms/${roomId}/messages`, options)
+                .then(response => {
+                    console.log("API応答ステータス:", response.status);
+                    if (response.ok) {
+                        return response.json().then(data => {
+                            console.log("API応答データ:", data);
+                            document.getElementById('successMessage').style.display = 'block';
+                            document.getElementById('errorMessage').style.display = 'none';
+                            // フォームをリセット
+                            document.getElementById('jobPostingForm').reset();
+                        });
+                    } else {
+                        console.error("API応答エラー:", response.status);
+                        return response.text().then(text => {
+                            console.error("エラー詳細:", text);
+                            throw new Error(`APIリクエストに失敗しました: ${response.status}`);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('エラー詳細:', error);
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'none';
+                });
         });
     </script>
 </body>
