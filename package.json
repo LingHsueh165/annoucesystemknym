@@ -1,0 +1,9 @@
+{
+    "name": "chatwork-job-posting",
+    "version": "1.0.0",
+    "description": "ChatWorkに求人情報を投稿するシステム",
+    "dependencies": {
+      "axios": "^1.3.4"
+    }
+}
+  

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>求人情報投稿システム - ChatWork連携</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1c6f7d;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #1b8b8d;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: #f6fdfd;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea, 
+        select {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="time"]{
+            width: 45%;
+            margin-bottom: 10px;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .salary-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        }
+        #salary {
+            width: 85%; /* 調整輸入框寬度比例 */
+            margin-bottom: 0;
+        }
+        .yen-symbol {
+            font-weight: normal;
+            margin-left: 10px;
+        }
+        .fare-label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            width: 15%;
+            padding: 3px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .fare-label:hover {
+            background-color: #c9d8d8;
+        }
+        .time-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-left: 3px;
+            padding-right: 3px;
+            margin: 5px;
+        }
+        button {
+            background-color: #2fbbd3;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 90%;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #2095c8;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .error-message {
+            background-color: #f2dede;
+            color: #a94442;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        /* モーダル関連のスタイル */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 700px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+        .preview-container {
+            background-color: #f0f8ff;
+            border: 1px solid #add8e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .preview-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            background-color: #e6f3ff;
+            padding: 5px;
+            border-left: 4px solid #25a8e0;
+        }
+        .preview-section {
+            margin-bottom: 15px;
+        }
+        .preview-label {
+            font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>求人情報投稿システム</h1>
+        
+        <form id="jobPostingForm">
+            <div>
+                <label for="apiKey">ChatWork APIキー：</label>
+                <input type="text" id="apiKey" name="apiKey" required>
+            </div>
+            
+            <div>
+                <label for="roomId">投稿先のルームID：</label>
+                <input type="text" id="roomId" name="roomId" required>
+            </div>
+            
+            <div>
+                <label for="location">勤務地：</label>
+                <select id="location" name="location" >
+                    <option value="鐘山苑">鐘山苑</option>
+                    <option value="浅間茶屋">浅間茶屋</option>
+                    <option value="山麓園">山麓園</option>
+                </select>
+            </div>
+
+            <div>
+                <label>時給：</label>
+                <div class="salary-container">
+                    <input type="number" id="salary" name="salary" step="100" required>
+                    <span class="yen-symbol">円</span>
+                </div>
+                <label class="fare-label">
+                    <input type="checkbox" id="fare" name="fare">
+                    <span style="margin-left: 5px;">交通費込み</span>
+                </label>
+            </div>
+            
+
+            <div>
+                <label for="workDay">勤務日：</label>
+                <input type="date" id="workDay" name="workDay" required>
+            </div>
+            
+            <div>
+                <label>勤務時間：</label>
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                    <input type="time" id="startTime" name="startTime" step="900" required>
+                    <div class="time-divider">～</div>
+                    <input type="time" id="endTime" name="endTime" step="900" required>
+                </div>
+                <p id="timeError" style="color: #a94442; display: none; margin-top: -15px; margin-bottom: 15px;">
+                    開始時間は終了時間より前にしてください
+                </p>
+            </div>
+            
+            <div>
+                <label for="workTitle">募集内容：</label>
+                <input type="text" id="workTitle" name="workTitle" required>
+            </div>
+
+            <div>
+                <label for="workDetail">仕事内容：</label>
+                <textarea id="workDetail" name="workDetail" wrap="hard" required></textarea>
+            </div>
+
+            <div>
+                <label for="treatment">待遇：</label>
+                <textarea id="treatment" name="treatment" wrap="hard" required></textarea>
+            </div>
+
+            <div>
+                <label for="belongings">持ち物：</label>
+                <textarea id="belongings" name="belongings" wrap="hard"></textarea>
+            </div>
+
+            <div>
+                <label for="notice">注意事項：</label>
+                <textarea id="notice" name="notice" wrap="hard"></textarea>
+            </div>
+
+            <button type="button" id="confirmButton">内容を確認する</button>
+        </form>
+        
+        <div id="successMessage" class="success-message">
+            求人情報がChatWorkに投稿されました！
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            エラーが発生しました。APIキーとルームIDを確認してください。
+        </div>
+    </div>
+
+    <!-- 確認用モーダル -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>投稿内容の確認</h2>
+            <p>以下の内容でChatWorkに投稿します。内容を確認してください。</p>
+            
+            <div class="preview-container">
+
+                <div class="preview-section">
+                    <div class="preview-label">【勤務地】</div>
+                    <div id="preview-location"></div>
+                </div>
+                
+                <div class="preview-section">
+                    <div class="preview-label">【勤務日と時間】</div>
+                    <div id="preview-workDay"></div>
+                    <div id="preview-datetime"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【時給】</div>
+                    <div id="preview-salary"></div>
+                    <div id="preview-fare"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【応募内容】</div>
+                    <div id="preview-workTitle"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【仕事内容】</div>
+                    <div id="preview-workDetail"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【待遇】</div>
+                    <div id="preview-treatment"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【持ち物】</div>
+                    <div id="preview-belongings"></div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-label">【注意事項】</div>
+                    <div id="preview-notice"></div>
+                </div>
+
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="secondary" id="editButton">編集に戻る</button>
+                <button type="button" id="submitButton">この内容で投稿する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // モーダル関連の要素
+        const modal = document.getElementById('confirmModal');
+        const confirmBtn = document.getElementById('confirmButton');
+        const closeBtn = document.querySelector('.close');
+        const editBtn = document.getElementById('editButton');
+        const submitBtn = document.getElementById('submitButton');
+        
+        // 「内容を確認する」ボタンを押したときの処理
+        confirmBtn.addEventListener('click', function() {
+
+            // フォームのバリデーション
+            const Pform = document.getElementById('jobPostingForm');
+            if (!Pform.checkValidity()) {
+                Pform.reportValidity();
+                return;
+            }
+            
+            // 時間のバリデーション
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            
+            if (startTime >= endTime) {
+                document.getElementById('timeError').style.display = 'block';
+                return; // 確認画面に進まない
+            } else {
+                document.getElementById('timeError').style.display = 'none';
+            }
+
+            // プレビュー内容を更新
+            document.getElementById('preview-location').textContent = document.getElementById('location').value;
+            document.getElementById('preview-salary').textContent = document.getElementById('salary').value;
+            document.getElementById('preview-workTitle').textContent = document.getElementById('workTitle').value;
+            document.getElementById('preview-workDetail').innerHTML = document.getElementById('workDetail').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-treatment').innerHTML = document.getElementById('treatment').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-belongings').innerHTML = document.getElementById('belongings').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-notice').innerHTML = document.getElementById('notice').value.replace(/\n/g, '<br>');
+            
+            //　チェックボックス処理
+            let withFare = document.getElementById("fare").checked;
+            if (withFare){
+                document.getElementById('preview-fare').textContent = "（交通費込み）"
+            } 
+
+            // 勤務日時のプレビュー更新
+            const workDay = document.getElementById('workDay').value;
+            const formattedDate = new Date(workDay).toLocaleDateString('ja-JP', {
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+            document.getElementById('preview-datetime').textContent = 
+                `${formattedDate} ${startTime}～${endTime}`;
+            
+            // モーダルを表示
+            modal.style.display = 'block';
+        });
+        
+        // モーダルを閉じる処理
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        editBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // 画面の他の部分をクリックしてもモーダルを閉じる
+        window.addEventListener('click', function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // 「この内容で投稿する」ボタンを押したときの処理
+        submitBtn.addEventListener('click', function() {
+            const apiKey = document.getElementById('apiKey').value;
+            const roomId = document.getElementById('roomId').value;
+            const location = document.getElementById('location').value;
+            const workDay = document.getElementById('workDay').value;
+            const salary = document.getElementById('salary').value;
+            const workTitle = document.getElementById('workTitle').value;
+            const workDetail = document.getElementById('workDetail').value;
+            const treatment = document.getElementById('treatment').value;
+            const belongings = document.getElementById('belongings').value;
+            const notice = document.getElementById('notice').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const formattedDate = new Date(workDay).toLocaleDateString('ja-JP', {
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            });
+            let withF = document.getElementById("fare").checked;
+            let FareMessage = ""
+            if (withF){
+                FareMessage = "（交通費込み）"
+            }
+
+            // メッセージの作成
+            const message = `[info][title]応募内容: ${workTitle}[/title]
+            【勤務地】${location}
+            【勤務日と時間】${formattedDate} ${startTime}～${endTime}
+            【時給】${salary}円 ${FareMessage}
+
+            【仕事内容】
+            ${workDetail}
+
+            【待遇】
+            ${treatment}
+
+            【持ち物】
+            ${belongings}
+
+            【注意事項】
+            ${notice}
+            [/info]`;
+            
+            // モーダルを閉じる
+            modal.style.display = 'none';
+            
+            // ChatWork APIにPOSTリクエストを送信
+            fetch('/api/send-to-chatwork', {   // 相対パスに変更
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    apiKey: apiKey,
+                    roomId: roomId,
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("API応答データ:", data);
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('jobPostingForm').reset();
+            })
+            .catch(error => {
+                console.error('エラー詳細:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
