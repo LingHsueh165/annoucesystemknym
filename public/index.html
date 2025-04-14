@@ -460,7 +460,7 @@
             modal.style.display = 'none';
             
             // ChatWork APIにPOSTリクエストを送信
-            fetch('/api/send-to-chatwork', {   // 相対パスに変更
+            fetch('/.netlify/functions/send-to-chatwork', {   // 相対パスに変更
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
