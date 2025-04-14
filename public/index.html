@@ -460,7 +460,7 @@
             modal.style.display = 'none';
             
             // ChatWork APIにPOSTリクエストを送信
-            fetch('/.netlify/function/send-to-chatwork', {   // 相対パスに変更
+           fetch('/.netlify/function/send-to-chatwork', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -471,7 +471,14 @@
                     message: message
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(`API Error: ${errorData.error || 'Unknown error'}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log("API応答データ:", data);
                 document.getElementById('successMessage').style.display = 'block';
@@ -480,6 +487,7 @@
             })
             .catch(error => {
                 console.error('エラー詳細:', error);
+                document.getElementById('errorMessage').textContent = `エラーが発生しました: ${error.message}`;
                 document.getElementById('errorMessage').style.display = 'block';
                 document.getElementById('successMessage').style.display = 'none';
             });
