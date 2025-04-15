@@ -369,10 +369,10 @@
             document.getElementById('preview-location').textContent = document.getElementById('location').value;
             document.getElementById('preview-salary').textContent = document.getElementById('salary').value;
             document.getElementById('preview-workTitle').textContent = document.getElementById('workTitle').value;
-            document.getElementById('preview-workDetail').innerHTML = document.getElementById('workDetail').value.replace(/\n/g, '<br>            ');
-            document.getElementById('preview-treatment').innerHTML = document.getElementById('treatment').value.replace(/\n/g, '<br>            ');
-            document.getElementById('preview-belongings').innerHTML = document.getElementById('belongings').value.replace(/\n/g, '<br>            ');
-            document.getElementById('preview-notice').innerHTML = document.getElementById('notice').value.replace(/\n/g, '<br>            ');
+            document.getElementById('preview-workDetail').innerHTML = document.getElementById('workDetail').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-treatment').innerHTML = document.getElementById('treatment').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-belongings').innerHTML = document.getElementById('belongings').value.replace(/\n/g, '<br>');
+            document.getElementById('preview-notice').innerHTML = document.getElementById('notice').value.replace(/\n/g, '<br>');
             
             //　チェックボックス処理
             let withFare = document.getElementById("fare").checked;
@@ -444,16 +444,16 @@
             【時給】${salary}円 ${FareMessage}
 
             【仕事内容】
-            ${workDetail}
+            ${workDetail.replace(/\n/g, '\n            ')}
 
             【待遇】
-            ${treatment}
+            ${treatment.replace(/\n/g, '\n            ')}
 
             【持ち物】
-            ${belongings}
+            ${belongings.replace(/\n/g, '\n            ')}
 
             【注意事項】
-            ${notice}
+            ${notice.replace(/\n/g, '\n            ')}
             [/info]`;
             
             // モーダルを閉じる
